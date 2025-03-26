@@ -36,8 +36,8 @@ Validators/ → FluentValidation kuralları (kullanılıyorsa)
 
 Projeyi klonlayın:
 
-git clone https://github.com/kullanici-adin/CarAPI.git
-cd CarAPI
+git clone https://github.com/Nilozkan/Patika-RestApi
+cd RestApi
 
 Bağımlılıkları yükleyin:
 
