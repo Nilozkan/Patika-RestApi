@@ -1,85 +1,106 @@
-🚗 Car API
+Car API - .NET Core RESTful Service
+Bu proje, .NET 8 ile geliştirilmiş basit bir RESTful Web API uygulamasıdır. API, arabaları (Car) yönetmek için temel CRUD işlemlerini sağlar. Projede SOLID prensiplerine uygun mimari ve temel .NET yetenekleri kullanılmıştır.
 
-Bu proje, in-memory veri yapısını kullanarak temel bir Car API sağlamaktadır. API, arabaların CRUD işlemlerini gerçekleştirmeye olanak tanır.
+📚 İçerik
+REST standartlarına uygun API controller yapısı
 
-📌 Özellikler
+SOLID prensiplerine uygun servis katmanı
 
-Araba Yönetimi
+Fake servis kullanımı (veritabanı yok)
 
-Yeni bir araba ekleme
+Dependency Injection
 
-Var olan arabaları listeleme
+FluentValidation
 
-ID'ye göre araba detaylarını görüntüleme
+Swagger dokümantasyonu
 
-Mevcut bir arabayı güncelleme
+Extension method kullanımı
 
-Arabayı silme
+Global hata yakalama (exception middleware)
 
-🛠 Kullanılan Teknolojiler
+Logging middleware
 
-.NET 8 
+Basit fake login ve custom authorization attribute (bonus)
 
-ASP.NET Web API
-
-FluentValidation 
-
-📂 Proje Yapısı
-
-Controllers/ → API Controller'ları
-
-Models/ → Car modeli
-
-Validators/ → FluentValidation kuralları (kullanılıyorsa)
-
-🚀 Kurulum ve Çalıştırma
-
-Projeyi klonlayın:
-
-git clone https://github.com/Nilozkan/Patika-RestApi
-cd RestApi
-
-Bağımlılıkları yükleyin:
-
-dotnet restore
-
-Projeyi çalıştırın:
-
+🚀 Başlarken
+1. Projeyi Çalıştırma
+2. 
+git clone https://github.com/kullaniciadi/proje-adi.git
+cd proje-adi
 dotnet run
+3. Swagger UI'ya Erişim
+Projeyi çalıştırdıktan sonra aşağıdaki URL üzerinden Swagger arayüzüne ulaşabilirsiniz:
 
-API'yi test edin:
 
-GET /api/cars → Tüm arabaları listeler.
+https://localhost:{port}/swagger
+🛠️ Kullanılan Teknolojiler
+Teknoloji	Açıklama
+.NET 8	Web API geliştirme
+FluentValidation	Model doğrulama
+Swagger	API dokümantasyonu
+Middleware	Global hata yakalama ve loglama
+Attribute	Fake kullanıcı yetkilendirme için custom attribute
+SOLID	Kod organizasyonu
 
-POST /api/cars → Yeni araba ekler.
+🔁 Endpointler
+Metot	URL	Açıklama
+GET	/api/car/all	Tüm arabaları getirir ([FakeAuthorize] ile korunur)
+GET	/api/car/{id}	ID ile araba getirir
+POST	/api/car	Yeni araba ekler
+PUT	/api/car/{id}	Arabayı günceller
+PATCH	/api/car/{id}	Sadece fiyat günceller
+DELETE	/api/car/{id}	Arabayı siler
 
-PATCH /api/cars/{id} → Belirtilen ID'ye sahip arabanın fiyatını günceller.
+🔐 Fake Login Sistemi
+FakeAuthorize attribute'u sadece giriş yapmış gibi davranan kullanıcılar için belirli endpointleri korur.
 
-GET /api/cars/{id} → Belirtilen ID'ye sahip arabayı döndürür.
+Gerçek kullanıcı girişi yoktur, fake olarak kontrol yapılır.
 
-PUT /api/cars/{id} → Belirtilen ID'deki arabayı günceller.
+Authorization kontrolü FakeAuthorizeAttribute.cs içinde yer alır.
 
-DELETE /api/cars/{id} → Arabayı siler.
+🧪 Validasyon Kuralları
+Araba modeli (Car) FluentValidation kullanılarak şu kurallara göre doğrulanır:
 
-📖 Örnek API Kullanımı
+Brand: boş olamaz
 
-Yeni Araba Ekleme:
+Model: boş olamaz
 
-{
-  "brand": "Toyota",
-  "model": "Corolla",
-  "year": 2017,
-  "price": 800000
-}
+Year: 2000 ve sonrası olmalı
 
-🛡 Hata Yönetimi
+Color: boş olamaz
 
-API, standart HTTP hata kodları döndürmektedir:
+Price: 0'dan büyük olmalı
 
-200 OK → Başarılı istek
+⚙️ Custom Middleware’ler
+GlobalExceptionMiddleware: Tüm hataları merkezi olarak yakalar.
 
-201 Created → Yeni kayıt oluşturuldu
+LogMiddleware: Gelen istekleri loglar.
 
-400 Bad Request → Geçersiz veri
+📁 Katmanlar
 
-404 Not Found → Kayıt bulunamadı
+RestApi
+│
+├── Controllers
+│   └── CarController.cs
+├── Models
+│   └── Car.cs
+├── Services
+│   ├── ICarService.cs
+│   └── FakeCarService.cs
+├── Validators
+│   └── CarValidator.cs
+├── Middlewares
+│   ├── GlobalExceptionMiddleware.cs
+│   └── LogMiddleware.cs
+├── Attributes
+│   └── FakeAuthorizeAttribute.cs
+├── Extensions
+│   └── ServiceExtension.cs
+└── Program.cs
+✍️ Geliştirici Notları
+Projede veritabanı kullanılmamıştır, tüm işlemler in-memory list üzerinden yapılmaktadır.
+
+SOLID prensiplerine göre ICarService interface’i üzerinden servis kullanımı sağlanmıştır.
+
+Swagger üzerinden tüm istekler kolayca test edilebilir.
+
