@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models;
 using FluentValidation.Results;
+using RestApi.Services;
+using RestApi.Attributes;
 
 namespace RestApi.Controllers
 {
@@ -10,9 +12,11 @@ namespace RestApi.Controllers
     [Route("api/[controller]")]
     public class CarController : ControllerBase
     {
+        private readonly ICarService _carService;
         private readonly IValidator<Car> _validator;
 
-        public CarController(IValidator<Car> validator){
+        public CarController(ICarService carService, IValidator<Car> validator){
+            _carService = carService;
             _validator = validator;
         }
         private static List<Car> CarList = new List<Car>()
@@ -46,70 +50,66 @@ namespace RestApi.Controllers
             }
 
         };
-         [HttpGet]
+         [HttpGet("all")]
+         [FakeAuthorize]
          public IActionResult GetCars(){
-             return Ok(CarList);
+           return Ok(_carService.GetAll());
          }
 
         [HttpGet("{id}")]
         public IActionResult GetCarById(int id)
         {
-            var car = CarList.Where(x=> x.Id == id).SingleOrDefault();
+            var car = _carService.GetById(id);
+            if (car == null)
+                return NotFound(new { message = "Car not found" });
+
             return Ok(car);
         }
 
-        // [HttpGet]
-        // public IActionResult GetFromQuery([FromQuery] string id)
-        // {
-        //     var car = CarList.Where(x=>x.Id == Convert.ToInt32(id)).SingleOrDefault();
-        //     return Ok(car);
-        // }
         
         [HttpPost]
         public IActionResult Post([FromBody]Car car)
         {
-            car.Id = CarList.Any() ? CarList.Max(c => c.Id) + 1 : 1;
-            FluentValidation.Results.ValidationResult validationResult = _validator.Validate(car);
-            if(!validationResult.IsValid)
-            {
+            var validationResult = _validator.Validate(car);
+            if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors);
-            }
-            CarList.Add(car);
-                return CreatedAtAction(nameof(GetCarById), new { id = car.Id }, car);
+
+            var createdCar = _carService.Add(car);
+            return CreatedAtAction(nameof(GetCarById), new { id = createdCar.Id }, createdCar);
         }
         
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Car putCar)
+        public IActionResult Put(int id, [FromBody] Car updatedCar)
         {
-            var car = CarList.FirstOrDefault(x => x.Id == id);
-            if (car == null) return NotFound(new{message ="Car not found"});
+            var validationResult = _validator.Validate(updatedCar);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors);
 
-            car.Brand = putCar.Brand;
-            car.Model = putCar.Model;
-            car.Year = putCar.Year;
-            car.Color = putCar.Color;
-            car.Price = putCar.Price;
-            return Ok(car);
+            var result = _carService.Update(id, updatedCar);
+            if (result==null)
+                return NotFound(new { message = "Car not found" });
+
+            return Ok(updatedCar);
         }
 
         [HttpPatch("{id}")]
         public IActionResult Patch(int id, [FromBody] decimal newPrice)
         {
-            var car = CarList.FirstOrDefault(x => x.Id==id);
-            if (car == null) return NotFound();
+            var result = _carService.UpdatePrice(id, newPrice);
+            if (result==null)
+                return NotFound(new { message = "Car not found" });
 
-            car.Price = newPrice;
-            return Ok(car);
+            return Ok(new { message = "Price updated successfully" });
         }
 
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var car = CarList.FirstOrDefault(c => c.Id==id);
-            if(car == null) return NotFound();
+           var result = _carService.Delete(id);
+            if (!result)
+                return NotFound(new { message = "Car not found" });
 
-            CarList.Remove(car);
             return NoContent();
         }
     }

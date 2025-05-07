@@ -1,12 +1,17 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using RestApi;
+using RestApi.Extensions;
+using RestApi.Middlewares;
+using RestApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddControllers();
+builder.Services.AddSingleton<ICarService, FakeCarService>();
+builder.Services.AddCustomServices(); 
+
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Validator>(); 
@@ -22,7 +27,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
